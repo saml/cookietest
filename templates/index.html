@@ -1,0 +1,93 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Cookie Test</title>
+<body>
+<button id="loginbutton">Login</button>
+<button id="logoutbutton">Logout</button>
+<hr>
+<button id="redirectloginbutton">Login Via Redirect</button>
+<button id="redirectlogoutbutton">Logout Via Redirect</button>
+<script>
+function parseQueryString(query) {     
+    var args = {};     
+    var splitted = query.split(/&/);
+    var n = splitted.length;
+    for (var i = 0; i < n; i++) {
+        var x = splitted[i];
+        var kv = x.split(/=/);
+        args[kv[0]] = kv[1];
+    }
+    return args;
+}
+
+function displayLogin() {
+    if (isLoggedIn()) {
+        loginButton.hidden = true;
+        logoutButton.hidden = false;
+        redirectLoginButton.hidden = true;
+        redirectLogoutButton.hidden = false;
+    } else {
+        loginButton.hidden = false;
+        logoutButton.hidden = true;
+        redirectLoginButton.hidden = false;
+        redirectLogoutButton.hidden = true;
+    } 
+}
+
+function doLogin() {
+    var n = SITES.length;
+    for (var i = 0; i < n; i++) {
+        var hostname = SITES[i];
+        var url = 'http://'+hostname+'/login';
+        doPOST(url);
+    }
+}
+
+function doLogout() {
+    var n = SITES.length;
+    for (var i = 0; i < n; i++) {
+        var hostname = SITES[i];
+        var url = 'http://'+hostname+'/logout';
+        doPOST(url);
+    }
+}
+
+function doRedirectLogin() {
+    var originalUrl = window.location.href;
+    window.location.href = '/redirectlogin'+window.location.search+'&redirect_to='+originalUrl;
+}
+
+function doRedirectLogout() {
+    var originalUrl = window.location.href;
+    window.location.href = '/redirectlogout'+window.location.search+'&redirect_to='+originalUrl;
+}
+
+function doPOST(url) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = displayLogin;
+    xhr.open('post', url, true);
+    xhr.send();
+}
+
+function isLoggedIn() {
+    return /user=/.exec(document.cookie);
+}
+
+var QUERY = parseQueryString(window.location.search.substring(1));
+var sitesStr = QUERY['sites'] || '';
+var SITES = sitesStr.split(',').filter(function(x) { return x; });
+
+var loginButton = document.getElementById('loginbutton');
+loginButton.onclick = doLogin;
+
+var logoutButton = document.getElementById('logoutbutton');
+logoutButton.onclick = doLogout;
+
+var redirectLoginButton = document.getElementById('redirectloginbutton');
+var redirectLogoutButton = document.getElementById('redirectlogoutbutton');
+redirectLoginButton.onclick = doRedirectLogin;
+redirectLogoutButton.onclick = doRedirectLogout;
+
+displayLogin();
+</script>
+</body>
